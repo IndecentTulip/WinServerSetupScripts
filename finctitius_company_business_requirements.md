@@ -15,9 +15,11 @@ Our commitment to excellence is reflected in our client-centric approach, where 
 
 Founder/Owner: 1 person who started the company and oversees its operations.
 
-Operations Manager: 1 person responsible for managing internal operations(internal IT team), including office management, administrative tasks, and HR functions. This role ensures smooth functioning of internal processes and supports the needs of the entire team.
+Operations Manager(+ HR): 1 person responsible for managing internal operations(internal IT team), including office management, administrative tasks, and HR functions. This role ensures smooth functioning of internal processes and supports the needs of the entire team.
 
-Support Manager: 1 person who oversees the client support team, manages client relationships, and ensures service delivery meets client expectations. This role focuses on external client support and satisfaction.
+Account manager: manages client relationships
+
+Support staff Manager: 1 person who oversees the client support team, ensures service delivery meets client expectations.
 
 ----------------------------------------------------------------------------------------------
 
