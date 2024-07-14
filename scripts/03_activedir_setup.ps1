@@ -1,109 +1,129 @@
-import-module activedirectory
 
-# IT DOESN'T WORK NOW
+Import-Module ActiveDirectory
 
 $domain = "plskys.com"
-# main ous
-new-adorganizationalunit -name "users" -path "dc=$domain"
-new-adorganizationalunit -name "groups" -path "dc=$domain"
+
+# main OUs
+New-ADOrganizationalUnit -Name "NEWUsers" -Path "DC=plskys,DC=com"
+New-ADOrganizationalUnit -Name "NEWGroups" -Path "DC=plskys,DC=com"
+New-ADOrganizationalUnit -Name "GlobalGroups" -Path "OU=NEWGroups, DC=plskys,DC=com"
+New-ADOrganizationalUnit -Name "DomainLocalGroups" -Path "OU=NEWGroups, DC=plskys,DC=com"
 
 
-# creation of users
-$accountnames = @(
-  "owner", "supportstaffmanager",
-  "accountmanager", "operationsmanager",
-  "networkadmin", "systemadmin",
-  "databaseadmin", "helpdesksupport",
-  "itsupportjunior", "itsupportsenior",
-  "itinfrastructureconsultant",
-  "securityspecialist", "databasespecialist",
-  "networkspecialist"
+# Creation of Users
+$accountNames = @(
+  "Owner", "SupportStaffManager",
+  "AccountManager", "OperationsManager",
+  "NetworkAdmin", "SystemAdmin",
+  "DatabaseAdmin", "HelpDeskSupport",
+  "ITSupportJunior", "ITSupportSenior",
+  "ITInfrConsultant", "SecuritySpecialist",
+  "DatabaseSpecialist", "NetworkSpecialist"
 )
 
-foreach ($name in $accountnames) {
-  new-aduser -name $name `
-    -samaccountname $name `
-    -userprincipalname ($name + "@" + $domain) `
-    -accountpassword (convertto-securestring "p@ssw0rd" -asplaintext -force) `
-    -path "ou=users,dc=$domain" `
-    -enabled $true
+foreach ($acname in $accountNames) {
+  try {
+    New-ADUser -Name $acname `
+      -SamAccountName $acname `
+      -UserPrincipalName ($acname + "@" + $domain) `
+      -AccountPassword (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force) `
+      -Path "OU=NEWUsers,DC=plskys,DC=com" `
+      -Enabled $true
+  }
+  catch {
+    Write-Host "Failed to create user $acname"
+  }
 }
 
-# create global groups and ous for them
-$globalgroupsnames = @(
-  "businessadmins", "supportstaff", 
-  "administrativestaff", "tier1support", 
-  "tier2support", "tier3support" 
+# Create Global Groups and OUs for them
+$globalGroupsNames = @(
+  "BusinessAdmins", "SupportStaff", 
+  "AdministrativeStaff", "Tier1Support", 
+  "Tier2Support", "Tier3Support" 
 )
 
-foreach ($name in $globalgroupsnames) {
-  new-adorganizationalunit ` 
-    -name $name `
-    -path "ou=groups,dc=$domain"
+foreach ($ggname in $globalGroupsNames) {
+  $ouPath = "OU=GlobalGroups,OU=NEWGroups,DC=plskys,DC=com"
 
-
-  new-adgroup -name $name `
-    -groupscope global `
-    -groupcategory security `
-    -path "ou=$name ou=groups,dc=$domain"
+  try {
+    New-ADGroup -Name $ggname `
+      -GroupScope Global `
+      -GroupCategory Security `
+      -Path $ouPath
+  }
+  catch {
+    Write-Host "Failed to create group $ggname"
+  }
 }
 
-# create domain local groups and ous for them
-$domainlocalgroupsnames = @(
-  "businessadminaccess", "supportstaffaccess",
-  "domainadminaccess", "tier1access",
-  "tier2access", "tier3access"
+# Create Domain Local Groups and OUs for them
+$domainLocalGroupsNames = @(
+  "BusinessAdminAccess", "SupportStaffAccess",
+  "DomainAdminAccess", "Tier1Access",
+  "Tier2Access", "Tier3Access"
 )
 
-foreach ($name in $domainlocalgroupsnames) {
-  new-adorganizationalunit ` 
-    -name $name `
-    -path "ou=groups,dc=$domain"
+foreach ($dlname in $domainLocalGroupsNames) {
+  $ouPath = "OU=DomainLocalGroups,OU=NEWGroups,DC=plskys,DC=com"
 
-
-  new-adgroup -name $name `
-    -groupscope domainlocal `
-    -groupcategory security `
-    -path "ou=$name ou=groups,dc=$domain"
+  try {
+    New-ADGroup -Name $dlname `
+      -GroupScope DomainLocal `
+      -GroupCategory Security `
+      -Path $ouPath
+  }
+  catch{
+    Write-Host "Failed to create group $dlname"
+  }
 }
 
 # yes, turns out there are hashtables in powershell 
-$globalgroupmembers = @{
-  "businessadmins" = @("owner", "supportstaffmanager")
-  "supportstaff" = @("accountmanager", "operationsmanager")
-  "administrativestaff" = @("systemadmin", "networkadmin", "databaseadmin")
-  "tier1support" = @("helpdesksupport", "itsupportjunior")
-  "tier2support" = @("itsupportsenior", "itinfrastructureconsultant")
-  "tier3support" = @("securityspecialist", "databasespecialist", "networkspecialist")
+$globalGroupMembers = @{
+  "BusinessAdmins" = @("Owner", "SupportStaffManager")
+  "SupportStaff" = @("AccountManager", "OperationsManager")
+  "AdministrativeStaff" = @("SystemAdmin", "NetworkAdmin", "DatabaseAdmin")
+  "Tier1Support" = @("HelpDeskSupport", "ITSupportJunior")
+  "Tier2Support" = @("ITSupportSenior", "ITInfrConsultant")
+  "Tier3Support" = @("SecuritySpecialist", "DatabaseSpecialist", "NetworkSpecialist")
 }
 
-foreach ($name in $globalgroupsnames) {
-  if ($globalgroupmembers.containskey($name)) {
-    $members = $globalgroupmembers[$name]  # get members for the current group
+foreach ($name in $globalGroupsNames) {
+  if ($globalGroupMembers.ContainsKey($name)) {
+    $members = $globalGroupMembers[$name]  # Get members for the current group
     # $members = @() "array" 
     
-    $admembers = $members | foreach-object { get-aduser -identity $_ }
-    # $_ is current element of array that foreach goes though
-    add-adgroupmember -identity $name -members $admembers
+    try {
+      $adMembers = $members | ForEach-Object { Get-ADUser -Identity $_ }
+      # $_ is current element of array that foreach goes though
+      Add-ADGroupMember -Identity $name -Members $adMembers
+    }
+    catch{
+      Write-Host "failed to add $members to $name"
+    }
   }
 
 }
 
-$domainlocalgroupmembers = @{
-  "businessadminaccess" = @("businessadmins")
-  "supportstaffaccess" = @("supportstaff")
-  "domainadminaccess" = @("administrativestaff")
-  "tier1access" = @("tier1support")
-  "tier2access" = @("tier2support")
-  "tier3access" = @("tier3support")
+$domainLocalGroupMembers = @{
+  "BusinessAdminAccess" = @("BusinessAdmins")
+  "SupportStaffAccess" = @("SupportStaff")
+  "DomainAdminAccess" = @("AdministrativeStaff")
+  "Tier1Access" = @("Tier1Support")
+  "Tier2Access" = @("Tier2Support")
+  "Tier3Access" = @("Tier3Support")
 }
 
-foreach ($name in $domainlocalgroupsnames) {
-  if ($domainlocalgroupmembers.containskey($name)){
-    $members = $domainlocalgroupmembers[$name]
+foreach ($name in $domainLocalGroupsNames) {
+  if ($domainLocalGroupMembers.ContainsKey($name)){
+    $members = $domainLocalGroupMembers[$name]
 
-    $admembers = $members | foreach-object { get-adgroup -identity $_}
-    add-adgroupmember -identity $name -members $admembers
+    try {
+      $adMembers = $members | ForEach-Object { Get-ADGroup -Identity $_}
+      Add-ADGroupMember -Identity $name -Members $adMembers
+    }
+    catch{
+      Write-Host "failed to add $members to $name"
+    }
   }
 }
 
@@ -236,3 +256,4 @@ foreach ($name in $domainlocalgroupsnames) {
 # 
 # all accounts are in Users OU
 # BusinessAdministrators and BusinessAdminAccess are in their dedicated OUs
+
