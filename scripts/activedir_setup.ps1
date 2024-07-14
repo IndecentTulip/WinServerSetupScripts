@@ -1,10 +1,23 @@
 Import-Module ActiveDirectory
 
-$domain = "plskys.com"
-$cred = Get-Credential
+Import-Module ADDSDeployment
+Install-ADDSForest `
+    -CreateDnsDelegation:$false `
+    -DatabasePath "C:\Windows\NTDS" `
+    -DomainMode "WinThreshold" `
+    -DomainName "yourdomain.com" `
+    -DomainNetbiosName "YOURDOMAIN" `
+    -ForestMode "WinThreshold" `
+    -InstallDns:$true `
+    -LogPath "C:\Windows\NTDS" `
+    -NoRebootOnCompletion:$false `
+    -SysvolPath "C:\Windows\SYSVOL" `
+    -Force:$true
 
-# Connect to AD (if needed, although not necessary for most operations)
-# Connect-ADServiceAccount -Credential $cred
+#$domain = "plskys.com"
+#$cred = Get-Credential
+#
+#Connect-ADServiceAccount -Credential $cred
 
 # main OUs
 New-ADOrganizationalUnit -Name "Users" -Path "DC=$domain"
