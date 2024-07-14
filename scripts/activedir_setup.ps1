@@ -1,23 +1,19 @@
 Import-Module ActiveDirectory
 
-Import-Module ADDSDeployment
-Install-ADDSForest `
-    -CreateDnsDelegation:$false `
-    -DatabasePath "C:\Windows\NTDS" `
-    -DomainMode "WinThreshold" `
-    -DomainName "yourdomain.com" `
-    -DomainNetbiosName "YOURDOMAIN" `
-    -ForestMode "WinThreshold" `
-    -InstallDns:$true `
-    -LogPath "C:\Windows\NTDS" `
-    -NoRebootOnCompletion:$false `
-    -SysvolPath "C:\Windows\SYSVOL" `
-    -Force:$true
+$domain = "plskys.com"
 
-#$domain = "plskys.com"
-#$cred = Get-Credential
-#
-#Connect-ADServiceAccount -Credential $cred
+Install-ADDSForest `
+  -DomainName $domain `
+  -DomainNetBIOSName "PLSKYS"`
+  -ForestMode "Windows2016Forest" `
+  -DomainMode "Windows2016Domain" `
+  -DomainAdministratorCredential (Get-Credential) `
+  -SafeModeAdministratorPassword (ConvertTo-SecureString "chan-ban-911-boom!" -AsPlainText -Force) `
+  -DatabasePath "C:\Windows\NTDS" `
+  -LogPath "C:\Windows\NTDS" `
+  -SysvolPath "C:\Windows\SYSVOL" `
+  -Force:$true
+
 
 # main OUs
 New-ADOrganizationalUnit -Name "Users" -Path "DC=$domain"
