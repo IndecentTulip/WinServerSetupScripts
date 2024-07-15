@@ -13,7 +13,7 @@ Install-WindowsFeatureWithReboot -FeatureName "DHCP"
 
 Install-WindowsFeatureWithReboot -FeatureName "DNS"
 
-Install-WindowsFeatureWithReboot -FeatureName "Web-Server"
+Install-WindowsFeatureWithReboot -FeatureName "FS-FileServer"
 
 
 Restart-Computer -Force
