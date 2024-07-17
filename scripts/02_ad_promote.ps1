@@ -8,4 +8,4 @@ Install-ADDSForest `
     -InstallDns `
     -NoRebootOnCompletion
 
-
+Restart-Computer -Force

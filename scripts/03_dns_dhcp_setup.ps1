@@ -1,25 +1,19 @@
-New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress "10.0.0.15" -PrefixLength 16 -DefaultGateway "10.0.0.1"
-Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses "10.0.0.15"
 
-$dnsIPAddress = "10.0.0.15"
-$dnsServerName = "bestdns"
-$dnsZoneName = "plskys.com"
+$DNS_Server = "10.0.0.15"
+Set-DnsClientServerAddress -InterfaceIndex 12 -ServerAddresses $DNS_Server
 
-Add-DnsServerPrimaryZone -Name $dnsZoneName -ZoneFile "$dnsZoneName.dns"
-Set-DnsServerPrimaryZone -Name $dnsZoneName -MasterServers $dnsIPAddress
-Add-DnsServerResourceRecordA -Name $dnsServerName -ZoneName $dnsZoneName -IPv4Address $dnsIPAddress
+$ZoneName = "plskys.com"
+$ZoneFile = "plskys.com.DNS"
+Add-DnsServerPrimaryZone -Name $ZoneName -ZoneFile $ZoneFile -DynamicUpdate NonsecureAndSecure
 
-$dhcpScopeName = "LANScope"
-$dhcpStartRange = "10.0.0.1"
-$dhcpEndRange = "10.0.255.254"
-$dhcpSubnetMask = "255.255.0.0"
-$dhcpRouter = "10.0.0.1"
-$dnsServerIP = "10.0.0.15"
+$ARecordName = "host1"
+$ARecordIP = "10.0.0.50"
+Add-DnsServerResourceRecordA -Name $ARecordName -ZoneName $ZoneName -AllowUpdateAny -IPv4Address 10.0.0.50
 
-Add-DhcpServerInDC
-Add-DhcpServerv4Scope -Name $dhcpScopeName -StartRange $dhcpStartRange -EndRange $dhcpEndRange -SubnetMask $dhcpSubnetMask -Router $dhcpRouter
+$ReverseZone = "1.168.192.in-addr.arpa"
+Add-DnsServerPrimaryZone -NetworkID 192.168.140.0/24 -ZoneFile $ReverseZone
 
-Set-DhcpServerv4OptionValue -OptionId 6 -ScopeId $dhcpScopeName -DnsServer $dnsServerIP
+Resolve-DnsName host1.plskys.com
 
-Restart-Computer -Force
+Read-Host "windows suck"
 

@@ -1,3 +1,7 @@
+Update-help
+
+Rename-Computer dcplskys01
+
 function Install-WindowsFeatureWithReboot {
     param (
         [string]$FeatureName
