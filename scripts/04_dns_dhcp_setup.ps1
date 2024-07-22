@@ -18,8 +18,8 @@ $DNS_Server = $IP
 # <><><><><><><><><><><><><><><><> DNS <><><><><><><><><><><><><><><><>
 
 # Forvard look up
-$ZoneName = "plskys.com"
-$ZoneFile = "plskys.com.DNS"
+$ZoneName = "TechProSolutions.com"
+$ZoneFile = "TechProSolutions.com.DNS"
 Add-DnsServerPrimaryZone -Name $ZoneName -ZoneFile $ZoneFile -DynamicUpdate NonsecureAndSecure
 
 # Reverse look up
@@ -36,24 +36,25 @@ Add-DnsServerPrimaryZone -NetworkID $WorkID  -ZoneFile $ReverseZone
 # A record
 $ARecordName = "dns01"
 Add-DnsServerResourceRecordA -Name $ARecordName -ZoneName $ZoneName -AllowUpdateAny -IPv4Address $IP
-# A record
-$OctetsforHost = $IP.Split('.')
-$hostlastOCT = [int]$OctetsforHost[-1]
-$hostlastOCT++
-Write-Host "host1lastOCT : $host1lastOCT"
-$HostIP = "$($OctetsforHost[0]).$($OctetsforHost[1]).$($OctetsforHost[2]).$host1lastOCT"
-$ARecordName02 = "www"
-Add-DnsServerResourceRecordA -Name $ARecordName02 -ZoneName $ZoneName -AllowUpdateAny -IPv4Address $HostIP
+#$OctetsforHost = $IP.Split('.')
+#$hostlastOCT = [int]$OctetsforHost[-1]
+#$hostlastOCT++
+#Write-Host "host1lastOCT : $host1lastOCT"
+#$HostIP = "$($OctetsforHost[0]).$($OctetsforHost[1]).$($OctetsforHost[2]).$host1lastOCT"
 
 # PTR
 $PTRdomainName = $ARecordName + $ZoneName
 Add-DnsServerResourceRecordPtr -Name $OctetsforRev[-1] -ZoneName $ReverseZone -AllowUpdateAny -TimeToLive 01:00:00 -AgeRecord -PtrDomainName $PTRdomainName
-$PTRdomainName = $ARecordName02 + $ZoneName
-Add-DnsServerResourceRecordPtr -Name $OctetsforHost[-1] -ZoneName $ReverseZone -AllowUpdateAny -TimeToLive 01:00:00 -AgeRecord -PtrDomainName $PTRdomainName
+#Configure Forwarders
 
+$forwarders = "8.8.8.8", "8.8.4.4"  
+
+Set-DnsServerForwarder -IPAddress $forwarders
 
 Read-Host "press anything to continue(debug)"
-Resolve-DnsName host1.plskys.com
+Resolve-DnsName host1.TechProSolutions.com
+Resolve-DnsName example.com
+Get-DnsServer
 ping google.com
 
 
@@ -68,9 +69,9 @@ $lastOCT = [int]$OctetsforDHCP[-1]
 $StartRange = "$($OctetsforDHCP[0]).$($OctetsforDHCP[1]).$($OctetsforDHCP[2]).$($lastOCT + 1)"  
 $EndRange = "$($OctetsforDHCP[0]).$($OctetsforDHCP[1]).$($OctetsforDHCP[2]).$($lastOCT + 200)"  
 
-Add-DhcpServerv4Scope -Name "LAN Scope" -StartRange $StartRange -EndRange $EndRange -SubnetMask $Mask -IPAddress $IP
+Add-DhcpServerv4Scope -Name "LAN Scope" -StartRange $StartRange -EndRange $EndRange -SubnetMask $Mask  
 
-Add-DhcpServerInDC -DnsName "plskys.com" -IPAddress $IP
+Add-DhcpServerInDC -DnsName "TechProSolutions.com" -IPAddress $IP-ComputerName dhcpserver.TechProSolutions.com
 
 Start-Service DHCPServer
 

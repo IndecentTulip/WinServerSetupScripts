@@ -4,14 +4,14 @@ Import-Module ActiveDirectory
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Unrestricted
 
 
-$domain = "plskys.com"
+$domain = "TechProSolutions.com"
 
 # main OUs
 try {
-  New-ADOrganizationalUnit -Name "NEWUsers" -Path "DC=plskys,DC=com"
-  New-ADOrganizationalUnit -Name "NEWGroups" -Path "DC=plskys,DC=com"
-  New-ADOrganizationalUnit -Name "GlobalGroups" -Path "OU=NEWGroups, DC=plskys,DC=com"
-  New-ADOrganizationalUnit -Name "DomainLocalGroups" -Path "OU=NEWGroups, DC=plskys,DC=com"
+  New-ADOrganizationalUnit -Name "NEWUsers" -Path "DC=TechProSolutions,DC=com"
+  New-ADOrganizationalUnit -Name "NEWGroups" -Path "DC=TechProSolutions,DC=com"
+  New-ADOrganizationalUnit -Name "GlobalGroups" -Path "OU=NEWGroups, DC=TechProSolutions,DC=com"
+  New-ADOrganizationalUnit -Name "DomainLocalGroups" -Path "OU=NEWGroups, DC=TechProSolutions,DC=com"
 }
 catch{
   Write-Host "The NEWGroups, NEWUsers, GlobalGroups, DomainLocalGroups are already created"
@@ -35,7 +35,7 @@ foreach ($acname in $accountNames) {
       -SamAccountName $acname `
       -UserPrincipalName ($acname + "@" + $domain) `
       -AccountPassword (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force) `
-      -Path "OU=NEWUsers,DC=plskys,DC=com" `
+      -Path "OU=NEWUsers,DC=TechProSolutions,DC=com" `
       -Enabled $true
   }
   catch {
@@ -51,7 +51,7 @@ $globalGroupsNames = @(
 )
 
 foreach ($ggname in $globalGroupsNames) {
-  $ouPath = "OU=GlobalGroups,OU=NEWGroups,DC=plskys,DC=com"
+  $ouPath = "OU=GlobalGroups,OU=NEWGroups,DC=TechProSolutions,DC=com"
 
   try {
     New-ADGroup -Name $ggname `
@@ -71,7 +71,7 @@ $domainLocalGroupsNames = @(
   "Tier2Access", "Tier3Access"
 )
 
-$ouPath = "OU=DomainLocalGroups,OU=NEWGroups,DC=plskys,DC=com"
+$ouPath = "OU=DomainLocalGroups,OU=NEWGroups,DC=TechProSolutions,DC=com"
 foreach ($dlname in $domainLocalGroupsNames) {
   try {
     New-ADOrganizationalUnit `

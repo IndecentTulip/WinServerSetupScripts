@@ -1,6 +1,4 @@
-Update-help
-
-Rename-Computer dcplskys01
+Rename-Computer DCTechProSolutions01
 
 function Install-WindowsFeatureWithReboot {
     param (
