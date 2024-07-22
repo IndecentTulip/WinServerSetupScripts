@@ -4,7 +4,7 @@ Import-Module ADDSDeployment
 
 Install-ADDSForest `
     -DomainName "TechProSolutions.com" `
-    -DomainNetbiosName "TechProSolutions" `
+    -DomainNetbiosName "TECHPROSOLUTIONS" `
     -ForestMode "WinThreshold" `
     -DomainMode "WinThreshold" `
     -InstallDns `
