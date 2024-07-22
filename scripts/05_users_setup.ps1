@@ -70,8 +70,9 @@ $domainLocalGroupsNames = @(
   "DomainAdminAccess", "Tier1Access",
   "Tier2Access", "Tier3Access"
 )
+
+$ouPath = "OU=DomainLocalGroups,OU=NEWGroups,DC=plskys,DC=com"
 foreach ($dlname in $domainLocalGroupsNames) {
-  $ouPath = "OU=DomainLocalGroups,OU=NEWGroups,DC=plskys,DC=com"
   try {
     New-ADOrganizationalUnit `
       -Name $dlname `
@@ -84,13 +85,13 @@ foreach ($dlname in $domainLocalGroupsNames) {
 
 }
 foreach ($dlname in $domainLocalGroupsNames) {
-  $ouPath = "OU=DomainLocalGroups,OU=NEWGroups,DC=plskys,DC=com"
+  $newPath = "OU=" + $dlname + "," + $ouPath
 
   try {
     New-ADGroup -Name $dlname `
       -GroupScope DomainLocal `
       -GroupCategory Security `
-      -Path "OU=" + $dlname + "," + $ouPath
+      -Path $newPath
   }
   catch{
     Write-Host "Failed to create group $dlname"
@@ -148,57 +149,5 @@ foreach ($name in $domainLocalGroupsNames) {
     }
   }
 }
-
-#TODO finish OU permissions and fix the current file permissions
-
-# Define shared folder paths and names
-$sharedFolders = @{
-    "Employees records" = "C:\SharedFolders\EmployeesRecords"
-    "Financial records" = "C:\SharedFolders\FinancialRecords"
-    "Business tools" = "C:\SharedFolders\BusinessTools"
-    "Customer records" = "C:\SharedFolders\CustomerRecords"
-    "Admin docs, programms" = "C:\SharedFolders\AdminDocsPrograms"
-    "Support team reports" = "C:\SharedFolders\SupportTeamReports"
-    "Tier1 tools" = "C:\SharedFolders\Tier1Tools"
-    "Tier2 tools" = "C:\SharedFolders\Tier2Tools"
-    "Tier3 tools" = "C:\SharedFolders\Tier3Tools"
-}
-
-# Create shared folders
-foreach ($folderName in $sharedFolders.Keys) {
-    $folderPath = $sharedFolders[$folderName]
-    if (-not (Test-Path $folderPath)) {
-        New-Item -Path $folderPath -ItemType Directory -Force
-    }
-    # Share the folder
-    New-SmbShare -Name $folderName -Path $folderPath -FullAccess "Domain Admins"
-}
-
-# Define permissions for each domain local group
-$permissions = @{
-    "BusinessAdminAccess" = @("Employees records", "Financial records", "Business tools", "Customer records", "Admin docs, programms")
-    "SupportStaffAccess" = @("Employees records", "Financial records", "Business tools", "Support team reports")
-    "DomainAdminAccess" = @("Employees records", "Financial records", "Business tools", "Support team reports", "Customer records", "Admin docs, programms", "Tier1 tools", "Tier2 tools", "Tier3 tools")
-    "Tier1Access" = @("Support team reports", "Customer records", "Tier1 tools")
-    "Tier2Access" = @("Support team reports", "Customer records", "Tier1 tools", "Tier2 tools")
-    "Tier3Access" = @("Support team reports", "Customer records", "Tier1 tools", "Tier2 tools", "Tier3 tools")
-}
-
-foreach ($group in $permissions.Keys) {
-    $folders = $permissions[$group]
-    foreach ($folder in $folders) {
-        try {
-            $acl = Get-Acl -Path ("\\localhost\" + $folder)
-            $rule = New-Object System.Security.AccessControl.FileSystemAccessRule("PLSKYS\$group", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
-            $acl.SetAccessRule($rule)
-            Set-Acl -Path ("\\localhost\" + $folder) -AclObject $acl
-        } catch {
-            Write-Host "Failed to set permissions for $folder"
-        }
-    }
-}
-
-
-
 
 

@@ -37,6 +37,6 @@ New-NetIPAddress -InterfaceAlias $adapter -IPAddress $IP -PrefixLength $prefixLe
 
 # Set DNS server
 $DNS_Server = $IP
-Set-DnsClientServerAddress -InterfaceAlias $adapter -ServerAddresses $($DNS_Server, "8.8.8.8")
+Set-DnsClientServerAddress -InterfaceAlias $adapter -ServerAddresses $DNS_Server
 
 
