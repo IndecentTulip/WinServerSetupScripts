@@ -70,7 +70,19 @@ $domainLocalGroupsNames = @(
   "DomainAdminAccess", "Tier1Access",
   "Tier2Access", "Tier3Access"
 )
+foreach ($dlname in $domainLocalGroupsNames) {
+  $ouPath = "OU=DomainLocalGroups,OU=NEWGroups,DC=plskys,DC=com"
+  try {
+    New-ADOrganizationalUnit `
+      -Name $dlname `
+      -Path $ouPath
+  }
+  catch{
+    Write-Host "Failed to create OU for $dlname"
+  }
 
+
+}
 foreach ($dlname in $domainLocalGroupsNames) {
   $ouPath = "OU=DomainLocalGroups,OU=NEWGroups,DC=plskys,DC=com"
 
@@ -78,7 +90,7 @@ foreach ($dlname in $domainLocalGroupsNames) {
     New-ADGroup -Name $dlname `
       -GroupScope DomainLocal `
       -GroupCategory Security `
-      -Path $ouPath
+      -Path "OU=" + $dlname + "," + $ouPath
   }
   catch{
     Write-Host "Failed to create group $dlname"
@@ -94,6 +106,8 @@ $globalGroupMembers = @{
   "Tier2Support" = @("ITSupportSenior", "ITInfrConsultant")
   "Tier3Support" = @("SecuritySpecialist", "DatabaseSpecialist", "NetworkSpecialist")
 }
+
+
 
 foreach ($name in $globalGroupsNames) {
   if ($globalGroupMembers.ContainsKey($name)) {
@@ -134,6 +148,8 @@ foreach ($name in $domainLocalGroupsNames) {
     }
   }
 }
+
+#TODO finish OU permissions and fix the current file permissions
 
 # Define shared folder paths and names
 $sharedFolders = @{

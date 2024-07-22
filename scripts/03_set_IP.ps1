@@ -39,23 +39,4 @@ New-NetIPAddress -InterfaceAlias $adapter -IPAddress $IP -PrefixLength $prefixLe
 $DNS_Server = $IP
 Set-DnsClientServerAddress -InterfaceAlias $adapter -ServerAddresses $($DNS_Server, "8.8.8.8")
 
-$ZoneName = "plskys.com"
-$ZoneFile = "plskys.com.DNS"
-Add-DnsServerPrimaryZone -Name $ZoneName -ZoneFile $ZoneFile -DynamicUpdate NonsecureAndSecure
-
-$OctetsforRev = $IP -split '\.'
-$ReverseIP = "$($OctetsforRev[2]).$($OctetsforRev[1]).$($OctetsforRev[0])"
-$ReverseZone = $ReverseIP + ".in-addr.arpa"
-$WorkID = "$($OctetsforRev[0]).$($OctetsforRev[1]).$($OctetsforRev[2])" + ".0" + "/" + $prefixLength
-Write-Host "ReverseIP: $ReverseIP"
-Write-Host "ReverseZone: $ReverseZone"
-Write-Host "WorkID : $WorkID "
-Add-DnsServerPrimaryZone -NetworkID $WorkID  -ZoneFile $ReverseZone
-
-$ARecordName = "host1"
-Add-DnsServerResourceRecordA -Name $ARecordName -ZoneName $ZoneName -AllowUpdateAny -IPv4Address $DNS_Server
-
-Read-Host "press anything to continue(debug)"
-Resolve-DnsName host1.plskys.com
-ping google.com
 
