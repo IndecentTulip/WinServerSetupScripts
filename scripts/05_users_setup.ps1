@@ -8,13 +8,14 @@ $domain = "TechProSolutions.com"
 
 # main OUs
 try {
-  New-ADOrganizationalUnit -Name "NEWUsers" -Path "DC=TechProSolutions,DC=com"
-  New-ADOrganizationalUnit -Name "NEWGroups" -Path "DC=TechProSolutions,DC=com"
-  New-ADOrganizationalUnit -Name "GlobalGroups" -Path "OU=NEWGroups, DC=TechProSolutions,DC=com"
-  New-ADOrganizationalUnit -Name "DomainLocalGroups" -Path "OU=NEWGroups, DC=TechProSolutions,DC=com"
+  New-ADOrganizationalUnit -Name "Company" -Path "DC=TechProSolutions,DC=com"
+  New-ADOrganizationalUnit -Name "Users" -Path "OU=Company,DC=TechProSolutions,DC=com"
+  New-ADOrganizationalUnit -Name "Groups" -Path "OU=Company,DC=TechProSolutions,DC=com"
+  New-ADOrganizationalUnit -Name "GlobalGroups" -Path "OU=Groups,OU=Company,DC=TechProSolutions,DC=com"
+  New-ADOrganizationalUnit -Name "DomainLocalGroups" -Path "OU=Groups,OU=Company,DC=TechProSolutions,DC=com"
 }
 catch{
-  Write-Host "The NEWGroups, NEWUsers, GlobalGroups, DomainLocalGroups are already created"
+  Write-Host "The Company Groups, Users, GlobalGroups, DomainLocalGroups are already created"
 }
 
 
@@ -35,7 +36,7 @@ foreach ($acname in $accountNames) {
       -SamAccountName $acname `
       -UserPrincipalName ($acname + "@" + $domain) `
       -AccountPassword (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force) `
-      -Path "OU=NEWUsers,DC=TechProSolutions,DC=com" `
+      -Path "OU=Users,OU=Company,DC=TechProSolutions,DC=com" `
       -Enabled $true
   }
   catch {
@@ -50,8 +51,8 @@ $globalGroupsNames = @(
   "Tier2Support", "Tier3Support" 
 )
 
+$ouPath = "OU=GlobalGroups,OU=Groups,OU=Company,DC=TechProSolutions,DC=com"
 foreach ($ggname in $globalGroupsNames) {
-  $ouPath = "OU=GlobalGroups,OU=NEWGroups,DC=TechProSolutions,DC=com"
 
   try {
     New-ADGroup -Name $ggname `
@@ -67,11 +68,10 @@ foreach ($ggname in $globalGroupsNames) {
 # Create Domain Local Groups and OUs for them
 $domainLocalGroupsNames = @(
   "BusinessAdminAccess", "SupportStaffAccess",
-  "DomainAdminAccess", "Tier1Access",
-  "Tier2Access", "Tier3Access"
-)
+  "DomainAdminAccess"
 
-$ouPath = "OU=DomainLocalGroups,OU=NEWGroups,DC=TechProSolutions,DC=com"
+)
+$ouPath = "OU=DomainLocalGroups,OU=Groups,OU=Company,DC=TechProSolutions,DC=com"
 foreach ($dlname in $domainLocalGroupsNames) {
   try {
     New-ADOrganizationalUnit `
@@ -81,11 +81,28 @@ foreach ($dlname in $domainLocalGroupsNames) {
   catch{
     Write-Host "Failed to create OU for $dlname"
   }
-
-
 }
+$domainLocalGroupsTierNames = @(
+  "Tier3Access", "Tier2Access",
+  "Tier1Access"
+)
+$ouTierPath = "OU=DomainLocalGroups,OU=Groups,OU=Company,DC=TechProSolutions,DC=com"
+foreach ($dlname in $domainLocalGroupsTierNames) {
+  try {
+    New-ADOrganizationalUnit `
+      -Name $dlname `
+      -Path $ouTierPath
+
+    $ouTierPath = "OU=$dlname,$ouTierPath"
+  }
+  catch{
+    Write-Host "Failed to create OU for $dlname"
+  }
+}
+
+
 foreach ($dlname in $domainLocalGroupsNames) {
-  $newPath = "OU=" + $dlname + "," + $ouPath
+  $newPath = "OU=$dlname,$ouPath"
 
   try {
     New-ADGroup -Name $dlname `
@@ -97,6 +114,23 @@ foreach ($dlname in $domainLocalGroupsNames) {
     Write-Host "Failed to create group $dlname"
   }
 }
+
+$outierpath = "OU=DomainLocalGroups,OU=Groups,OU=Company,DC=TechProSolutions,DC=com"
+foreach ($dlname in $domainLocalGroupsTierNames) {
+  $outierpath = "OU=$dlname,$outierpath"
+
+  try {
+    New-ADGroup -Name $dlname `
+      -GroupScope DomainLocal `
+      -GroupCategory Security `
+      -Path $outierpath
+  }
+  catch{
+    Write-Host "Failed to create group $dlname"
+  }
+}
+
+
 
 # yes, turns out there are hashtables in powershell 
 $globalGroupMembers = @{
@@ -113,7 +147,6 @@ $globalGroupMembers = @{
 foreach ($name in $globalGroupsNames) {
   if ($globalGroupMembers.ContainsKey($name)) {
     $members = $globalGroupMembers[$name]  # Get members for the current group
-    # $members = @() "array" 
     
     try {
       $adMembers = $members | ForEach-Object { Get-ADUser -Identity $_ }

@@ -71,7 +71,7 @@ $EndRange = "$($OctetsforDHCP[0]).$($OctetsforDHCP[1]).$($OctetsforDHCP[2]).$($l
 
 Add-DhcpServerv4Scope -Name "LAN Scope" -StartRange $StartRange -EndRange $EndRange -SubnetMask $Mask  
 
-Add-DhcpServerInDC -DnsName "TechProSolutions.com" -IPAddress $IP -ComputerName dhcpserver.TechProSolutions.com
+Add-DhcpServerInDC -DnsName "TechProSolutions.com" -IPAddress $IP 
 
 Start-Service DHCPServer
 
