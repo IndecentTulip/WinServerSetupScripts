@@ -28,13 +28,13 @@ Set-GPRegistryValue -Name "DomainLocalPerm" -Key "HKCU\Software\Policies\Microso
 Set-GPRegistryValue -Name "Tier1AccessPerm" -Key "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -ValueName "NoControlPanel" -Type DWORD -Value 1 -Confirm:$false
 
 
-# Tier2AccessPerm
-# ControlPanelPolicy(0)
-Set-GPRegistryValue -Name "Tier1AccessPerm" -Key "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -ValueName "NoControlPanel" -Type DWORD -Value 0 -Confirm:$false
-# RestartPermissionPolicy
-Set-GPRegistryValue -Name "Tier1AccessPerm" -Key "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -ValueName "ShutdownWithoutLogon" -Type DWORD -Value 1 -Confirm:$false
-# BitLockerPolicy
-Set-GPRegistryValue -Name "Tier1AccessPerm" -Key "HKLM\SOFTWARE\Policies\Microsoft\FVE" -ValueName "OSRequireActiveDirectoryBackup" -Type DWORD -Value 1 -Confirm:$false
+# tier2accessperm
+# controlpanelpolicy(0)
+set-gpregistryvalue -name "tier1accessperm" -key "hkcu\software\microsoft\windows\currentversion\policies\explorer" -valuename "nocontrolpanel" -type dword -value 0 -confirm:$false
+# restartpermissionpolicy
+set-gpregistryvalue -name "tier1accessperm" -key "hklm\software\microsoft\windows\currentversion\policies\system" -valuename "shutdownwithoutlogon" -type dword -value 1 -confirm:$false
+# bitlockerpolicy
+set-gpregistryvalue -name "tier1accessperm" -key "hklm\software\policies\microsoft\fve" -valuename "osrequireactivedirectorybackup" -type dword -value 1 -confirm:$false
 
 
 # Tier3AccessPerm
@@ -114,7 +114,10 @@ $ouPathsnGPONames = @{
   "Tier1AccessPerm" = @("OU=Tier1Access,OU=Tier2Access,OU=Tier3Access")
   "Tier2AccessPerm" = @("OU=Tier2Access,OU=Tier3Access")
   "Tier3AccessPerm" = @("OU=Tier3Access")
-  "DomainLocalPerm" = @("")
+  "DomainLocalPerm" = @("OU=BusinessAdminAccess")
+  "DomainLocalPerm" = @("OU=SupportStaffAccess")
+  "DomainLocalPerm" = @("OU=DomainAdminAccess")
+  "DomainLocalPerm" = @("OU=Tier1Access,OU=Tier2Access,OU=Tier3Access")
 
 }
 foreach ($name in $GPOForDomainLocal) {
