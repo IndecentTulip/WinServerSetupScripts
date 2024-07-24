@@ -31,7 +31,7 @@ Write-Host "ReverseIP: $ReverseIP"
 Write-Host "ReverseZone: $ReverseZone"
 Write-Host "WorkID : $WorkID "
 Add-DnsServerPrimaryZone -NetworkID $WorkID  -ZoneFile $ReverseZone
-
+Add-DnsServerPrimaryZone -NetworkID "10.1.0.0/24" -ReplicationScope "Forest"
 
 # A record
 $ARecordName = "dns01"
@@ -52,7 +52,7 @@ $forwarders = "8.8.8.8", "8.8.4.4"
 Set-DnsServerForwarder -IPAddress $forwarders
 
 Read-Host "press anything to continue(debug)"
-Resolve-DnsName host1.TechProSolutions.com
+Resolve-DnsName TechProSolutions.com
 Resolve-DnsName example.com
 Get-DnsServer
 ping google.com
@@ -67,7 +67,7 @@ $OctetsforDHCP = $IP.Split('.')
 $lastOCT = [int]$OctetsforDHCP[-1] 
 
 $StartRange = "$($OctetsforDHCP[0]).$($OctetsforDHCP[1]).$($OctetsforDHCP[2]).$($lastOCT + 1)"  
-$EndRange = "$($OctetsforDHCP[0]).$($OctetsforDHCP[1]).$($OctetsforDHCP[2]).$($lastOCT + 200)"  
+$EndRange = "$($OctetsforDHCP[0]).$($OctetsforDHCP[1]).$($OctetsforDHCP[2]).$($lastOCT + 100)"  
 
 Add-DhcpServerv4Scope -Name "LAN Scope" -StartRange $StartRange -EndRange $EndRange -SubnetMask $Mask  
 
