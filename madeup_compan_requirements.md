@@ -1,4 +1,3 @@
-### EDIT AT THE END, THIS IS TEMPORARY 
 ### {n} means that there are "n" number of people, we haven't desided yet
 
 <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
